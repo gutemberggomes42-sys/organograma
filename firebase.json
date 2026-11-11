@@ -1,0 +1,17 @@
+{
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      ".*",
+      "**/node_modules/**",
+      "firestore.rules",
+      "README-Firebase.md",
+      "colaboradores-import.json"
+    ]
+  }
+}
