@@ -1,23 +1,25 @@
-# Configuração Firebase — Organograma Usina Cambuí
+# Sincronização do Organograma — Firebase
 
-O site abre diretamente no organograma, sem tela de login. O SDK do Firebase é carregado pelo CDN oficial. Não abra `index.html` com `file://` se quiser sincronização em nuvem: módulos ES precisam de uma origem HTTP/HTTPS.
+O sistema sincroniza em tempo real quando é aberto por um endereço HTTP/HTTPS. Abrir `index.html` como `file://` salva apenas neste navegador e não conecta ao Firestore.
 
-## Preparar o projeto
+## Acesso compartilhado sem login
 
-1. No Firebase Console do projeto `organograma-43954`, crie um banco Cloud Firestore em modo de produção.
-2. Para sincronização em nuvem, crie contas pelo Firebase Authentication e aprove cada UID como administrador. O uso sem login salva os dados apenas no armazenamento local do navegador.
-3. Publique as regras deste repositório (`firestore.rules`). Elas negam acesso por padrão e autorizam somente UIDs que tenham documento em `admins`.
-4. Em **Authentication → Users**, copie o UID de cada conta autorizada. No Firestore Console, crie um documento `admins/{UID}` (por exemplo, `admins/UID_COPIADO`) com o campo `role` igual a `admin`. Um novo usuário recebe o UID na tela após criar a conta; cadastros não aprovados continuam sem acesso ao banco. As regras impedem que a própria aplicação crie ou altere essa lista.
-5. Em **Authentication → Settings → Authorized domains**, confirme que o domínio de Hosting está autorizado. Instale o Firebase CLI e execute neste diretório: `firebase deploy --only firestore:rules,hosting`.
-6. Acesse o endereço de Hosting publicado. Uma conta previamente autenticada e aprovada será sincronizada automaticamente; sem uma sessão, o sistema funciona localmente neste navegador.
-7. A lista atual de 497 colaboradores já está embutida na constante `bundledRoster` de `index.html`, para aparecer sem importação manual. O botão **Importar base** permite carregar outra lista neste navegador e, com sessão Firebase autorizada, salvá-la no Firestore.
+Por solicitação do proprietário, as regras em `firestore.rules` permitem leitura e gravação públicas apenas nos documentos `appData/organization` e `appData/roster`. Qualquer pessoa que tenha acesso ao app pode visualizar e alterar o organograma e a base de colaboradores. Não use este modo para dados que precisem de controle de acesso.
 
-## Persistência e sincronização
+## Publicação
 
-- A estrutura do organograma é salva no documento `appData/organization`.
-- A lista inicial (`bundledRoster`) fica dentro de `index.html`. Se publicar este HTML em um repositório ou site público, nomes, matrículas, cargos, setores, locais e datas de admissão ficam visíveis a quem acessar o código ou a página.
-- Colaboradores adicionados manualmente são salvos localmente e, com sessão aprovada, em `appData/roster`. Uma lista não vazia do Firestore substitui a lista inicial no navegador.
-- Alterações recebidas de outros usuários aparecem em tempo real. O armazenamento local continua como cópia de contingência neste navegador.
-- Use apenas contas internas autorizadas: o cadastro contém dados pessoais de colaboradores.
+O projeto Firebase configurado é `organograma-43954`. Com o Firebase CLI instalado e autenticado, neste diretório execute:
 
-A configuração web do Firebase no HTML identifica o projeto, mas não concede acesso ao Firestore. As regras continuam exigindo uma conta autorizada. A lista incluída no HTML é pública quando o sistema é publicado; mantenha a base atualizada e publique apenas se isso for adequado para os dados de RH. Sem uma sessão Firebase aprovada, importações e cadastros ficam apenas neste navegador.
+```sh
+firebase deploy --only firestore:rules,hosting
+```
+
+Depois, abra o endereço HTTPS do Firebase Hosting. O indicador no topo mostra se está sincronizado ou se está operando apenas localmente.
+
+## Dados e sincronização
+
+- Estrutura: `appData/organization`.
+- Lista de colaboradores: `appData/roster`.
+- Alterações são transmitidas aos navegadores conectados por listener em tempo real.
+- Os 497 registros da lista inicial permanecem embutidos no código-fonte.
+- A configuração do Firebase e a lista inicial estão visíveis no código publicado.
